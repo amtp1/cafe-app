@@ -100,7 +100,6 @@ function saveOrder() {
     body: JSON.stringify({
       waiter: waiter.value,
       table: table.value,
-      status: status.value,
       items,
       total: total.innerText
     })
@@ -126,13 +125,31 @@ function calcCurrent() {
 }
 
 async function loadHistory() {
-  res = await fetch("/orders", {
-    headers: {
-        Authorization: "Bearer " + localStorage.getItem("token")
-    }
-  });
-  historyOrders = await res.json();
-  renderHistory(historyOrders);
+  const res = await fetch("/api/orders");
+  let orders = await res.json();
+
+  const search = document
+    .getElementById("searchWaiter")
+    .value
+    .toLowerCase();
+
+  const status = document.getElementById("statusFilter").value;
+
+  // 🔍 поиск
+  if (search) {
+    orders = orders.filter(o =>
+      o.waiter.toLowerCase().includes(search)
+    );
+  }
+
+  // 🎛 фильтр
+  if (status) {
+    orders = orders.filter(o =>
+      o.status === status
+    );
+  }
+
+  renderHistory(orders);
 }
 
 function renderHistory(list) {
@@ -145,14 +162,22 @@ function renderHistory(list) {
       itemsHtml += `<div>${i.name} x${i.qty} — ${i.sum}</div>`;
     });
 
+    const icon = o.status === "Готово" ? "✅" : "⏳";
+
     box.innerHTML += `
       <div class="order-card">
         <div class="order-head">
           <span>Стол ${o.table} · ${o.waiter}</span>
+          <span class="badge ${o.status === "Готово" ? "done" : "work"}"><b>${icon} ${o.status}</b></span>
           <span>${new Date(o.createdAt).toLocaleString()}</span>
         </div>
         <div class="order-items">${itemsHtml}</div>
         <div class="order-total">Итого: ${o.total}</div>
+        <b>Статус:</b>
+        <select onchange="changeStatus('${o._id}', this.value)">
+          <option ${o.status === "В работе" ? "selected" : ""}>В работе</option>
+          <option ${o.status === "Готово" ? "selected" : ""}>Готово</option>
+        </select>
       </div>
     `;
   });

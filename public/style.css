@@ -217,5 +217,51 @@ input, select, button {
   border-radius: 10px;
 }
 
-.work { background:#fff7ed; }
-.done { background:#ecfdf5; }
+.order {
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.08);
+  transition: .2s;
+}
+
+.order.work {
+  background: linear-gradient(135deg, #fff7ed, #ffedd5);
+  border-left: 6px solid #fb923c;
+}
+
+.order.done {
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  border-left: 6px solid #22c55e;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+.badge.work {
+  background: #fb923c;
+  color: white;
+}
+
+.badge.done {
+  background: #22c55e;
+  color: white;
+}
+
+.history-tools {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.history-tools input,
+.history-tools select {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}

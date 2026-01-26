@@ -34,14 +34,6 @@
                 <label>Стол</label>
                 <input type="number" id="table">
             </div>
-            <div>
-                <label>Статус</label>
-                <select onchange="changeStatus('${o._id}', this.value)">
-                    <option ${o.status==="В работе"?"selected":""}>В работе</option>
-                    <option ${o.status==="Готово"?"selected":""}>Готово</option>
-                </select>
-                <div class="order ${o.status==="Готово"?"done":"work"}"></div>
-            </div>
             </div>
 
             <hr>
@@ -72,14 +64,19 @@
 
     <!-- TAB HISTORY -->
     <div id="history" class="tab-content">
-        <div class="history-toolbar">
-            <input 
-            type="text" 
-            id="searchWaiter" 
-            placeholder="🔍 Поиск по официанту..."
-            oninput="filterHistory()"
+        <div class="history-tools">
+            <input
+                id="searchWaiter"
+                placeholder="Поиск официанта..."
+                oninput="loadHistory()"
             >
-    </div>
+
+            <select id="statusFilter" onchange="loadHistory()">
+                <option value="">Все</option>
+                <option value="В работе">В работе</option>
+                <option value="Готово">Готово</option>
+            </select>
+        </div>
 
     <div class="history-list" id="ordersHistory"></div>
     </div>
