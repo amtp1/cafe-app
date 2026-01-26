@@ -13,7 +13,7 @@ app.use(express.static("public"));
 
 const JWT_SECRET = "Asdjaj-SDF23-@#@!asdasd-asd23-12j3kl23j";
 
-mongoose.connect("mongodb://127.0.0.1:27017/cafe-app");
+mongoose.connect("mongodb+srv://magomedovabdul20012_db_user:I4S666echQDZKDc0@cluster0.fr20fm8.mongodb.net/cafe-app/?appName=Cluster0");
 
 const User = require("./models/User");
 const Menu = require("./models/Menu");
@@ -73,4 +73,4 @@ function auth(req, res, next) {
 }
 
 const PORT = 3000;
-app.listen(PORT, "0.0.0.0", () => {console.log("Server running on port", PORT);});
+app.listen(PORT, "localhost", () => {console.log("Server running on port", PORT);});
