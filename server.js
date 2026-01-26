@@ -73,4 +73,4 @@ function auth(req, res, next) {
 }
 
 const PORT = 3000;
-app.listen(PORT, "localhost", () => {console.log("Server running on port", PORT);});
+app.listen(PORT, "0.0.0.0", () => {console.log("Server running on port", PORT);});
