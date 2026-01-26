@@ -13,7 +13,7 @@ app.use(express.static("public"));
 
 const JWT_SECRET = "Asdjaj-SDF23-@#@!asdasd-asd23-12j3kl23j";
 
-mongoose.connect("mongodb+srv://magomedovabdul20012_db_user:I4S666echQDZKDc0@cluster0.fr20fm8.mongodb.net/cafe-app/?appName=Cluster0");
+mongoose.connect("mongodb+srv://magomedovabdul20012_db_user:I4S666echQDZKDc0@cluster0.fr20fm8.mongodb.net/cafe-app/?retryWrites=true&w=majority");
 
 const User = require("./models/User");
 const Menu = require("./models/Menu");
