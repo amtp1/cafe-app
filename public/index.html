@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Заказ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="loginBox" class="login-box">
+  <h2>🔐 Вход</h2>
+  <input id="loginUser" placeholder="Логин">
+  <input id="loginPass" type="password" placeholder="Пароль">
+  <button onclick="login()">Войти</button>
+</div>
+<div id="appBox" style="display:none">
+    <div class="app">
+    <h2>🍽 POS Заказы</h2>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab('create')">Создать заказ</button>
+        <button class="tab-btn" onclick="openTab('history')">История</button>
+    </div>
+
+    <!-- TAB CREATE -->
+    <div id="create" class="tab-content active">
+        <div class="layout">
+        <div class="left">
+            <label>Официант</label>
+            <select id="waiter"></select>
+
+            <div class="row">
+            <div>
+                <label>Стол</label>
+                <input type="number" id="table">
+            </div>
+            <div>
+                <label>Статус</label>
+                <select id="status">
+                <option>В работе</option>
+                <option>Готово</option>
+                </select>
+            </div>
+            </div>
+
+            <hr>
+
+            <label>Блюдо</label>
+            <input list="menuList" id="dishInput" placeholder="Начни вводить...">
+            <datalist id="menuList"></datalist>
+
+            <label>Количество</label>
+            <input type="number" id="qty" value="1">
+
+            <label>Сумма блюда</label>
+            <input id="itemSum" disabled>
+
+            <button class="add-btn" onclick="addItem()">➕ Добавить</button>
+            <button class="save-btn" onclick="saveOrder()">💾 Сохранить заказ</button>
+        </div>
+
+        <div class="right">
+            <h3>🧾 Выбранные блюда</h3>
+            <ul class="items" id="items"></ul>
+            <div class="total">
+            💰 Итого: <span id="total">0</span>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- TAB HISTORY -->
+    <div id="history" class="tab-content">
+        <div class="history-toolbar">
+            <input 
+            type="text" 
+            id="searchWaiter" 
+            placeholder="🔍 Поиск по официанту..."
+            oninput="filterHistory()"
+            >
+    </div>
+
+    <div class="history-list" id="ordersHistory"></div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
