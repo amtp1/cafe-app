@@ -30,10 +30,10 @@
   }
 }
 
-@media (max-width: 480px) {
-  .badge {
-    padding: 1px 5px;
-    font-size: 8px;
+@media (max-width: 768px) {
+  .order-head {
+    font-size: 12px;
+    gap: 4px;
   }
 }
 
@@ -203,8 +203,9 @@ input, select, button {
 
 .order-head {
   display: flex;
-  justify-content: space-between;
-  font-weight: 600;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
 }
 
 .order-items {
@@ -330,4 +331,9 @@ input, select, button {
   padding: 8px;
   border-radius: 8px;
   border: 1px solid #ddd;
+}
+
+.time {
+  opacity: 0.6;
+  font-size: 12px;
 }
