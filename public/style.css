@@ -216,3 +216,6 @@ input, select, button {
   background: #cbd5e1;
   border-radius: 10px;
 }
+
+.work { background:#fff7ed; }
+.done { background:#ecfdf5; }

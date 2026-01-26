@@ -36,10 +36,11 @@
             </div>
             <div>
                 <label>Статус</label>
-                <select id="status">
-                <option>В работе</option>
-                <option>Готово</option>
+                <select onchange="changeStatus('${o._id}', this.value)">
+                    <option ${o.status==="В работе"?"selected":""}>В работе</option>
+                    <option ${o.status==="Готово"?"selected":""}>Готово</option>
                 </select>
+                <div class="order ${o.status==="Готово"?"done":"work"}"></div>
             </div>
             </div>
 

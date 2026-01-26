@@ -59,6 +59,21 @@ app.get("/orders", auth, async (req, res) => {
   res.json(orders);
 });
 
+app.get("/api/orders", async (req, res) => {
+  const orders = await Order.find().sort({
+    status: 1,
+    createdAt: -1
+  });
+  res.json(orders);
+});
+
+app.put("/api/orders/:id/status", async (req, res) => {
+  await Order.findByIdAndUpdate(req.params.id, {
+    status: req.body.status
+  });
+  res.json({ ok: true });
+});
+
 function auth(req, res, next) {
   const header = req.headers.authorization;
   if (!header) return res.status(401).json({ error: "Нет доступа" });

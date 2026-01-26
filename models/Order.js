@@ -3,7 +3,10 @@ const mongoose = require("mongoose");
 module.exports = mongoose.model("Order", {
   waiter: String,
   table: Number,
-  status: String,
+  status: {
+    type: String,
+    default: "В работе"
+  },
   items: [
     {
       name: String,

@@ -182,3 +182,13 @@ function showApp() {
   document.getElementById("loginBox").style.display = "none";
   document.getElementById("appBox").style.display = "block";
 }
+
+async function changeStatus(id, status) {
+  await fetch(`/api/orders/${id}/status`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status })
+  });
+
+  loadHistory();
+}
