@@ -1,6 +1,70 @@
+@media (max-width: 768px) {
+  .main {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .panel {
+    width: 100%;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .history {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .order-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (hover: none) {
+  button:hover {
+    background: inherit;
+  }
+}
+
+@media (max-width: 480px) {
+  .badge {
+    padding: 1px 5px;
+    font-size: 8px;
+  }
+}
+
+.order-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+}
+
 * {
   box-sizing: border-box;
   font-family: "Segoe UI", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+button {
+  min-height: 44px;
+  font-size: 16px;
+}
+
+input, select {
+  font-size: 16px;
+  padding: 10px;
+}
+
+.tabs button {
+  flex: 1;
 }
 
 body {
@@ -237,10 +301,12 @@ input, select, button {
 
 .badge {
   display: inline-block;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
   margin-left: 6px;
+  line-height: 1.2;
 }
 
 .badge.work {
