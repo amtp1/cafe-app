@@ -234,3 +234,22 @@ body {
     font-size: 14px;
   }
 }
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-logout {
+  margin-top: auto;
+  background: #ef4444;
+  border: none;
+  color: white;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.sidebar-logout:hover {
+  background: #dc2626;
+}

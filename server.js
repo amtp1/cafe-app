@@ -33,7 +33,7 @@ app.use(session({
 
 app.use(express.static(path.join(__dirname, "public")));
 
-mongoose.connect(SERVER_MONGODB_URL);
+mongoose.connect(LOCAL_MONGODB_URL);
 
 const User = require("./models/User");
 const Menu = require("./models/Menu");
