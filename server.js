@@ -33,7 +33,7 @@ const JWT_SECRET = "Asdjaj-SDF23-@#@!asdasd-asd23-12j3kl23j";
 const SERVER_MONGODB_URL = "mongodb+srv://magomedovabdul20012_db_user:I4S666echQDZKDc0@cluster0.fr20fm8.mongodb.net/cafeapp?appName=Cluster0"
 const LOCAL_MONGODB_URL = "mongodb://127.0.0.1:27017/cafe-app"
 
-mongoose.connect(LOCAL_MONGODB_URL);
+mongoose.connect(SERVER_MONGODB_URL);
 
 const User = require("./models/User");
 const Menu = require("./models/Menu");
