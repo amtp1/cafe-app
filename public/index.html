@@ -4,20 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Заказ</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
-<div id="loginBox" class="login-box">
-  <h2>🔐 Вход</h2>
-  <input id="loginUser" placeholder="Логин">
-  <input id="loginPass" type="password" placeholder="Пароль">
-  <button onclick="login()">Войти</button>
-</div>
-<div id="appBox" style="display:none">
+<div id="appBox">
     <div class="app">
     <h2>🍽 POS Заказы</h2>
+    <div class="topbar">
+        <div class="logo">Пользователь</div>
 
+        <div class="user-menu">
+            <div class="avatar" id="avatarBtn">&#129332;</div>
+
+            <div class="dropdown" id="userDropdown">
+            <div class="user-name" id="userBox"></div>
+            <div class="divider"></div>
+            <button id="logoutBtn">Выйти</button>
+            </div>
+        </div>
+    </div>
+    <p></p>
     <div class="tabs">
         <button class="tab-btn active" onclick="openTab('create')">Создать заказ</button>
         <button class="tab-btn" onclick="openTab('history')">История</button>
@@ -27,17 +34,12 @@
     <div id="create" class="tab-content active">
         <div class="layout">
         <div class="left">
-            <label>Официант</label>
-            <select id="waiter"></select>
-
             <div class="row">
             <div>
                 <label>Стол</label>
                 <input type="number" id="table">
             </div>
             </div>
-
-            <hr>
 
             <label>Блюдо</label>
             <input list="menuList" id="dishInput" placeholder="Начни вводить...">
@@ -83,6 +85,6 @@
     </div>
 </div>
 
-<script src="script.js"></script>
+<script src="/js/script.js"></script>
 </body>
 </html>

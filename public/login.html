@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Cafe POS — Вход</title>
+  <link rel="stylesheet" href="/css/login.css">
+</head>
+<body>
+
+<div class="login-wrapper">
+  <div class="login-card">
+    <h1>☕ Cafe POS</h1>
+    <p class="subtitle">Вход для персонала</p>
+
+    <form id="loginForm">
+      <input id="username" placeholder="Логин" required>
+      <input id="password" type="password" placeholder="Пароль" required>
+
+      <button type="submit">Войти</button>
+    </form>
+
+    <div class="error" id="error"></div>
+  </div>
+</div>
+
+<script>
+document.getElementById("loginForm").onsubmit = async e => {
+  e.preventDefault();
+
+  const res = await fetch("/api/login", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: username.value,
+      password: password.value
+    })
+  });
+
+  if (res.ok) {
+    const data = await res.json();
+    if (data.role == 'super_admin') {
+      location.href = "/admin";
+    } else
+      location.href = "/";
+    } else {
+      document.getElementById("error").innerText = "Неверный логин или пароль";
+    }
+};
+</script>
+
+</body>
+</html>

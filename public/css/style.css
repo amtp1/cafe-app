@@ -250,29 +250,6 @@ input, select, button {
   display: block;
 }
 
-.login-box {
-  max-width: 320px;
-  margin: 80px auto;
-  background: #fff;
-  padding: 20px;
-  border-radius: 14px;
-  box-shadow: 0 10px 25px rgba(0,0,0,.2);
-}
-
-.login-box input, .login-box button {
-  width: 100%;
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-}
-
-.login-box button {
-  background: #4f7cff;
-  color: white;
-  border: none;
-}
-
 .items::-webkit-scrollbar {
   width: 6px;
 }
@@ -336,4 +313,103 @@ input, select, button {
 .time {
   opacity: 0.6;
   font-size: 12px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: #61646e;
+  color: white;
+  border-radius: 10%;
+}
+
+.user-box {
+  font-size: 13px;
+  opacity: .9;
+}
+
+.user-panel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  background: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.user-info {
+  font-size: 13px;
+  opacity: .9;
+}
+
+.user-menu {
+  position: relative;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  background: #334155;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: 42px;
+  background: white;
+  border-radius: 12px;
+  padding: 10px;
+  min-width: 140px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.2);
+  display: none;
+}
+
+.dropdown.show {
+  display: block;
+}
+
+.user-name {
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 8px 0;
+}
+
+#logoutBtn {
+  width: 100%;
+  border: none;
+  padding: 6px;
+  border-radius: 8px;
+  background: #ef4444;
+  color: white;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+#logoutBtn:hover {
+  background: #dc2626;
+}
+
+#userBox {
+  color: black;
 }

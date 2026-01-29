@@ -6,30 +6,33 @@ let menu = [];
 let items = [];
 let historyOrders = [];
 
+let currentUser = null;
+
 const dishInput = document.getElementById("dishInput");
 const qtyInput = document.getElementById("qty");
 const itemSumInput = document.getElementById("itemSum");
 
+const avatarBtn = document.getElementById("avatarBtn");
+const dropdown = document.getElementById("userDropdown");
+
+const logoutBtn = document.getElementById("logoutBtn");
+
+avatarBtn.onclick = e => {
+  e.stopPropagation();
+  dropdown.classList.toggle("show");
+};
+
+document.body.onclick = () => {
+  dropdown.classList.remove("show");
+};
+
+logoutBtn.onclick = async () => {
+  await fetch("/api/logout", { method: "POST" });
+  location.href = "/login";
+};
+
+loadUser();
 loadHistory();
-
-async function login() {
-  const username = loginUser.value;
-  const password = loginPass.value;
-
-  const res = await fetch("/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password })
-  });
-
-  const data = await res.json();
-  if (data.token) {
-    localStorage.setItem("token", data.token);
-    showApp();
-  } else {
-    alert(data.error);
-  }
-}
 
 fetch("/menu").then(r => r.json()).then(data => {
   menu = data;
@@ -92,13 +95,11 @@ function render() {
   totalEl.innerText = total;
 }
 
-
 function saveOrder() {
-  fetch("/order", {
+  fetch("/api/order", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      waiter: waiter.value,
       table: table.value,
       items,
       total: total.innerText
@@ -124,8 +125,20 @@ function calcCurrent() {
   itemSumInput.value = dish.price * qty;
 }
 
+async function loadUser() {
+  const res = await fetch("/api/me");
+  currentUser = await res.json();
+
+  if (!currentUser) {
+    location.href = "/login";
+    return;
+  }
+
+  document.getElementById("userBox").innerText = `(${currentUser.role === "admin" ? "Админ" : "Официант"}): ${currentUser.username}`;
+}
+
 async function loadHistory() {
-  const res = await fetch("/api/orders");
+  const res = await fetch("/api/orders", { method: "GET" });
   let orders = await res.json();
 
   const search = document
@@ -167,7 +180,7 @@ function renderHistory(list) {
     box.innerHTML += `
       <div class="order-card">
         <div class="order-head">
-          <span>Стол ${o.table} · ${o.waiter}</span>
+          <span>Стол ${o.table} · <b>Официант:</b> ${o.waiter}</span>
           <span class="badge ${o.status === "Готово" ? "done" : "work"}"><b>${icon} ${o.status}</b></span>
           <span>${new Date(o.createdAt).toLocaleString()}</span>
         </div>
