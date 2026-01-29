@@ -1,42 +1,3 @@
-@media (max-width: 768px) {
-  .main {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .panel {
-    width: 100%;
-    padding: 10px;
-  }
-}
-
-@media (max-width: 768px) {
-  .history {
-    max-height: 70vh;
-    overflow-y: auto;
-  }
-}
-
-@media (max-width: 768px) {
-  .order-layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (hover: none) {
-  button:hover {
-    background: inherit;
-  }
-}
-
-@media (max-width: 768px) {
-  .order-head {
-    font-size: 12px;
-    gap: 4px;
-  }
-}
-
 .order-layout {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -412,4 +373,138 @@ input, select, button {
 
 #userBox {
   color: black;
+}
+
+.dish-select {
+  position: relative;
+}
+
+.dish-dropdown {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.15);
+  max-height: 220px;
+  overflow-y: auto;
+  display: none;
+  z-index: 50;
+}
+
+.dish-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+}
+
+.dish-item:hover {
+  background: #f3f4f6;
+}
+
+/* ================= IPHONE 15 PRO ================= */
+@media (max-width: 480px) {
+
+  body {
+    padding: 8px;
+  }
+
+  .app {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .layout {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .order-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .main {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .left, .right {
+    width: 100%;
+  }
+
+  input, button, select {
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  .row {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .items {
+    max-height: 220px;
+  }
+
+  .history {
+    padding: 14px;
+  }
+
+  .history-list {
+    max-height: 55vh;
+  }
+
+  .order-head {
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+
+  .order-items {
+    font-size: 13px;
+  }
+
+  .total {
+    font-size: 16px;
+  }
+
+  .tabs {
+    padding: 3px;
+  }
+
+  .tab-btn {
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  .topbar {
+    padding: 8px 10px;
+    border-radius: 12px;
+  }
+
+  .avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .dropdown {
+    right: -10px;
+    top: 38px;
+  }
+
+  .dish-dropdown {
+    max-height: 180px;
+  }
+
+  .dish-item {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
 }

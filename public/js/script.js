@@ -55,7 +55,13 @@ fetch("/waiters").then(r => r.json()).then(data => {
 
 function addItem() {
   const name = dishInput.value;
-  const qty = Number(qtyInput.value || 1);
+
+  let qty = Number(qtyInput.value || 1);
+  if (qty < 1) {
+    qty = 1;
+    qtyInput.value = 1;
+  }
+
   const dish = menu.find(d => d.name === name);
 
   if (!dish) {
@@ -65,8 +71,6 @@ function addItem() {
 
   const sum = dish.price * qty;
   items.push({ name, qty, price: dish.price, sum });
-
-  console.log(items); // для проверки
 
   dishInput.value = "";
   qtyInput.value = 1;
@@ -115,7 +119,13 @@ qtyInput.addEventListener("input", calcCurrent);
 
 function calcCurrent() {
   const dish = menu.find(d => d.name === dishInput.value);
-  const qty = Number(qtyInput.value || 1);
+
+  let qty = Number(qtyInput.value || 1);
+
+  if (qty < 1) {
+    qty = 1;
+    qtyInput.value = 1;
+  }
 
   if (!dish) {
     itemSumInput.value = "";
@@ -230,3 +240,33 @@ async function changeStatus(id, status) {
 
   loadHistory();
 }
+
+dishInput.addEventListener("input", showDropdown);
+dishInput.addEventListener("focus", showDropdown);
+
+function showDropdown() {
+  const val = dishInput.value.toLowerCase();
+  dishDropdown.innerHTML = "";
+
+  menu
+    .filter(d => d.name.toLowerCase().includes(val))
+    .forEach(d => {
+      const div = document.createElement("div");
+      div.className = "dish-item";
+      div.innerHTML = `<span>${d.name}</span><b>${d.price} ₽</b>`;
+      div.onclick = () => {
+        dishInput.value = d.name;
+        dishDropdown.style.display = "none";
+        calcCurrent();
+      };
+      dishDropdown.appendChild(div);
+    });
+
+  dishDropdown.style.display = "block";
+}
+
+document.addEventListener("click", e => {
+  if (!dishInput.parentElement.contains(e.target)) {
+    dishDropdown.style.display = "none";
+  }
+});

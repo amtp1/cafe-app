@@ -9,6 +9,10 @@ const session = require("express-session");
 const path = require("path");
 
 const app = express();
+const JWT_SECRET = "Asdjaj-SDF23-@#@!asdasd-asd23-12j3kl23j";
+const SERVER_MONGODB_URL = "mongodb+srv://magomedovabdul20012_db_user:I4S666echQDZKDc0@cluster0.fr20fm8.mongodb.net/cafeapp?appName=Cluster0"
+const LOCAL_MONGODB_URL = "mongodb://127.0.0.1:27017/cafe-app"
+
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(express.json());
@@ -21,19 +25,15 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 дней
     secure: false,
     httpOnly: true,
-    sameSite: "lax"
   }
 }));
 
 app.use(express.static(path.join(__dirname, "public")));
 
-const JWT_SECRET = "Asdjaj-SDF23-@#@!asdasd-asd23-12j3kl23j";
-const SERVER_MONGODB_URL = "mongodb+srv://magomedovabdul20012_db_user:I4S666echQDZKDc0@cluster0.fr20fm8.mongodb.net/cafeapp?appName=Cluster0"
-const LOCAL_MONGODB_URL = "mongodb://127.0.0.1:27017/cafe-app"
-
-mongoose.connect(SERVER_MONGODB_URL);
+mongoose.connect(LOCAL_MONGODB_URL);
 
 const User = require("./models/User");
 const Menu = require("./models/Menu");
@@ -77,6 +77,7 @@ app.post("/api/logout", (req, res) => {
     if (err) {
       return res.status(500).json({ error: "Logout error" });
     }
+    res.clearCookie("cafe.sid");
     res.json({ ok: true });
   });
 });

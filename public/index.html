@@ -37,16 +37,18 @@
             <div class="row">
             <div>
                 <label>Стол</label>
-                <input type="number" id="table">
+                <input type="number" id="table" min="1">
             </div>
             </div>
 
             <label>Блюдо</label>
-            <input list="menuList" id="dishInput" placeholder="Начни вводить...">
-            <datalist id="menuList"></datalist>
+            <div class="dish-select">
+                <input id="dishInput" placeholder="Выберите блюдо" autocomplete="off">
+                <div id="dishDropdown" class="dish-dropdown"></div>
+            </div>
 
             <label>Количество</label>
-            <input type="number" id="qty" value="1">
+            <input id="qty" type="number" min="1" value="1">
 
             <label>Сумма блюда</label>
             <input id="itemSum" disabled>
