@@ -36,7 +36,7 @@ app.use(
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "public/admin")));
 
-mongoose.connect(MONGODB_URL);
+mongoose.connect(SERVER_MONGODB_URL);
 
 const User = require("./models/User");
 const Menu = require("./models/Menu");
