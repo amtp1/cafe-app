@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
 
 module.exports = mongoose.model("Waiter", {
-  name: String
+  name: { type: String, required: true, trim: true }
 });

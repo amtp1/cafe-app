@@ -36,16 +36,19 @@ document.getElementById("loginForm").onsubmit = async e => {
       password: password.value
     })
   });
-
   if (res.ok) {
     const data = await res.json();
     if (data.role == 'super_admin') {
       location.href = "/admin";
-    } else
-      location.href = "/";
-    } else {
-      document.getElementById("error").innerText = "Неверный логин или пароль";
+    } 
+    else if (data.isBlocked) {
+      document.getElementById("error").innerText = "Ваш аккаунт заблокирован!";
     }
+    else
+      location.href = "/";
+  } else {
+    document.getElementById("error").innerText = "Неверный логин или пароль!";
+  }
 };
 </script>
 

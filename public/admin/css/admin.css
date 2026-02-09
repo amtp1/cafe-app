@@ -73,11 +73,35 @@ body {
   box-shadow: 0 10px 25px rgba(0,0,0,.08);
 }
 
+/* было: grid-template-columns: 1fr 120px; */
 .table-head,
 .row {
   display: grid;
-  grid-template-columns: 1fr 120px;
+  grid-template-columns: 1.2fr 1.2fr 0.9fr;
   padding: 14px 18px;
+}
+
+.action-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.action-delete {
+  background: #ef4444;
+  color: white;
+}
+
+.action-lock {
+  background: #f59e0b;
+  color: white;
+}
+
+.action-unlock {
+  background: #22c55e;
+  color: white;
 }
 
 .table-head {
@@ -200,17 +224,32 @@ body {
     border-radius: 8px;
   }
 
-  /* TABLE */
+  /* TABLE: мобильная карточная таблица */
   .table {
     margin-top: 12px;
     border-radius: 12px;
   }
 
-  .table-head,
+  .table-head {
+    display: none;
+  }
+
   .row {
-    grid-template-columns: 1fr 70px;
+    grid-template-columns: 1fr;
     padding: 10px 12px;
     font-size: 13px;
+    row-gap: 4px;
+  }
+
+  .row span:nth-child(1),
+  .row span:nth-child(2) {
+    display: block;
+  }
+
+  .row span:nth-child(3) {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 6px;
   }
 
   .table-body {
@@ -232,6 +271,17 @@ body {
   .modal-actions .save {
     padding: 8px 12px;
     font-size: 14px;
+  }
+}
+
+/* iPhone 15 Pro landscape: немного более плотная таблица */
+@media (max-height: 480px) and (orientation: landscape) {
+  .content {
+    padding: 10px;
+  }
+
+  .table-body {
+    max-height: 60vh;
   }
 }
 

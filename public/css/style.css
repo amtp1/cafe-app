@@ -283,7 +283,7 @@ input, select, button {
   padding: 10px 14px;
   background: #61646e;
   color: white;
-  border-radius: 10%;
+  border-radius: 16px;
 }
 
 .user-box {
@@ -404,7 +404,7 @@ input, select, button {
   background: #f3f4f6;
 }
 
-/* ================= IPHONE 15 PRO ================= */
+/* ================= IPHONE 15 PRO (портрет/альбомная) ================= */
 @media (max-width: 480px) {
 
   body {
@@ -412,6 +412,8 @@ input, select, button {
   }
 
   .app {
+    max-width: 100%;
+    margin: 0;
     padding: 14px;
     border-radius: 14px;
   }
@@ -430,11 +432,14 @@ input, select, button {
     gap: 12px;
   }
 
-  .left, .right {
+  .left,
+  .right {
     width: 100%;
   }
 
-  input, button, select {
+  input,
+  button,
+  select {
     font-size: 16px;
     padding: 12px;
   }
@@ -450,6 +455,8 @@ input, select, button {
 
   .history {
     padding: 14px;
+    margin: 16px 0 0;
+    max-width: 100%;
   }
 
   .history-list {
@@ -471,16 +478,18 @@ input, select, button {
 
   .tabs {
     padding: 3px;
+    overflow-x: auto;
   }
 
   .tab-btn {
     padding: 8px;
     font-size: 13px;
+    white-space: nowrap;
   }
 
   .topbar {
     padding: 8px 10px;
-    border-radius: 12px;
+    border-radius: 14px;
   }
 
   .avatar {
@@ -506,5 +515,24 @@ input, select, button {
   .badge {
     font-size: 10px;
     padding: 2px 6px;
+  }
+}
+
+/* iPhone 15 Pro, горизонталь — немного увеличиваем «дыхание» */
+@media (max-height: 480px) and (orientation: landscape) {
+  body {
+    padding: 6px;
+  }
+
+  .app {
+    padding: 12px;
+  }
+
+  .layout {
+    gap: 10px;
+  }
+
+  .history-list {
+    max-height: 45vh;
   }
 }

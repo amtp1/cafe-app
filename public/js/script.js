@@ -11,14 +11,15 @@ let currentUser = null;
 const dishInput = document.getElementById("dishInput");
 const qtyInput = document.getElementById("qty");
 const itemSumInput = document.getElementById("itemSum");
+const dishDropdown = document.getElementById("dishDropdown");
 
 const avatarBtn = document.getElementById("avatarBtn");
 const dropdown = document.getElementById("userDropdown");
 
 const logoutBtn = document.getElementById("logoutBtn");
 
-avatarBtn.onclick = e => {
-  e.stopPropagation();
+avatarBtn.onclick = event => {
+  event.stopPropagation();
   dropdown.classList.toggle("show");
 };
 
@@ -34,24 +35,17 @@ logoutBtn.onclick = async () => {
 loadUser();
 loadHistory();
 
-fetch("/menu").then(r => r.json()).then(data => {
-  menu = data;
-  const list = document.getElementById("menuList");
-  data.forEach(d => {
-    const opt = document.createElement("option");
-    opt.value = d.name;
-    list.appendChild(opt);
+fetch("/menu")
+  .then(res => res.json())
+  .then(data => {
+    menu = data;
+    const list = document.getElementById("menuList");
+    data.forEach(dish => {
+      const option = document.createElement("option");
+      option.value = dish.name;
+      list.appendChild(option);
+    });
   });
-});
-
-fetch("/waiters").then(r => r.json()).then(data => {
-  const w = document.getElementById("waiter");
-  data.forEach(d => {
-    const opt = document.createElement("option");
-    opt.text = d.name;
-    w.add(opt);
-  });
-});
 
 function addItem() {
   const name = dishInput.value;
@@ -86,12 +80,12 @@ function render() {
   itemsEl.innerHTML = "";
   let total = 0;
 
-  items.forEach(i => {
-    total += i.sum;
+  items.forEach(item => {
+    total += item.sum;
     itemsEl.innerHTML += `
       <li>
-        <span>${i.name} x${i.qty}</span>
-        <strong>${i.sum}</strong>
+        <span>${item.name} x${item.qty}</span>
+        <strong>${item.sum}</strong>
       </li>
     `;
   });
@@ -110,9 +104,6 @@ function saveOrder() {
     })
   }).then(() => alert("Сохранено"));
 }
-
-dishInput.addEventListener("input", calcCurrent);
-qtyInput.addEventListener("input", calcCurrent);
 
 dishInput.addEventListener("input", calcCurrent);
 qtyInput.addEventListener("input", calcCurrent);
@@ -144,12 +135,16 @@ async function loadUser() {
     return;
   }
 
-  document.getElementById("userBox").innerText = `(${currentUser.role === "admin" ? "Админ" : "Официант"}): ${currentUser.username}`;
+  document.getElementById("userBox").innerText = `(${
+    currentUser.role === "admin" ? "Админ" : "Официант"
+  }): ${currentUser.nickname}`;
 }
 
 async function loadHistory() {
   const res = await fetch("/api/orders", { method: "GET" });
   let orders = await res.json();
+
+  historyOrders = orders;
 
   const search = document
     .getElementById("searchWaiter")
@@ -160,16 +155,14 @@ async function loadHistory() {
 
   // 🔍 поиск
   if (search) {
-    orders = orders.filter(o =>
-      o.waiter.toLowerCase().includes(search)
+    orders = orders.filter(order =>
+      order.waiter.toLowerCase().includes(search)
     );
   }
 
   // 🎛 фильтр
   if (status) {
-    orders = orders.filter(o =>
-      o.status === status
-    );
+    orders = orders.filter(order => order.status === status);
   }
 
   renderHistory(orders);
@@ -179,27 +172,29 @@ function renderHistory(list) {
   const box = document.getElementById("ordersHistory");
   box.innerHTML = "";
 
-  list.forEach(o => {
+  list.forEach(order => {
     let itemsHtml = "";
-    o.items.forEach(i => {
-      itemsHtml += `<div>${i.name} x${i.qty} — ${i.sum}</div>`;
+    order.items.forEach(item => {
+      itemsHtml += `<div>${item.name} x${item.qty} — ${item.sum}</div>`;
     });
 
-    const icon = o.status === "Готово" ? "✅" : "⏳";
+    const icon = order.status === "Готово" ? "✅" : "⏳";
 
     box.innerHTML += `
       <div class="order-card">
         <div class="order-head">
-          <span>Стол ${o.table} · <b>Официант:</b> ${o.waiter}</span>
-          <span class="badge ${o.status === "Готово" ? "done" : "work"}"><b>${icon} ${o.status}</b></span>
-          <span>${new Date(o.createdAt).toLocaleString()}</span>
+          <span>Стол ${order.table} · <b>Официант:</b> ${order.waiter}</span>
+          <span class="badge ${order.status === "Готово" ? "done" : "work"}"><b>${icon} ${
+            order.status
+          }</b></span>
+          <span>${new Date(order.createdAt).toLocaleString()}</span>
         </div>
         <div class="order-items">${itemsHtml}</div>
-        <div class="order-total">Итого: ${o.total}</div>
+        <div class="order-total">Итого: ${order.total}</div>
         <b>Статус:</b>
-        <select onchange="changeStatus('${o._id}', this.value)">
-          <option ${o.status === "В работе" ? "selected" : ""}>В работе</option>
-          <option ${o.status === "Готово" ? "selected" : ""}>Готово</option>
+        <select onchange="changeStatus('${order._id}', this.value)">
+          <option ${order.status === "В работе" ? "selected" : ""}>В работе</option>
+          <option ${order.status === "Готово" ? "selected" : ""}>Готово</option>
         </select>
       </div>
     `;
@@ -207,18 +202,22 @@ function renderHistory(list) {
 }
 
 function filterHistory() {
-  const q = document.getElementById("searchWaiter").value.toLowerCase();
+  const query = document.getElementById("searchWaiter").value.toLowerCase();
 
-  const filtered = historyOrders.filter(o =>
-    o.waiter.toLowerCase().includes(q)
+  const filtered = historyOrders.filter(order =>
+    order.waiter.toLowerCase().includes(query)
   );
 
   renderHistory(filtered);
 }
 
 function openTab(name) {
-  document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
-  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document
+    .querySelectorAll(".tab-content")
+    .forEach(tab => tab.classList.remove("active"));
+  document
+    .querySelectorAll(".tab-btn")
+    .forEach(button => button.classList.remove("active"));
 
   document.getElementById(name).classList.add("active");
   event.target.classList.add("active");
@@ -227,8 +226,16 @@ function openTab(name) {
 }
 
 function showApp() {
-  document.getElementById("loginBox").style.display = "none";
-  document.getElementById("appBox").style.display = "block";
+  const loginBox = document.getElementById("loginBox");
+  const appBox = document.getElementById("appBox");
+
+  if (loginBox) {
+    loginBox.style.display = "none";
+  }
+
+  if (appBox) {
+    appBox.style.display = "block";
+  }
 }
 
 async function changeStatus(id, status) {
@@ -249,13 +256,13 @@ function showDropdown() {
   dishDropdown.innerHTML = "";
 
   menu
-    .filter(d => d.name.toLowerCase().includes(val))
-    .forEach(d => {
+    .filter(dish => dish.name.toLowerCase().includes(val))
+    .forEach(dish => {
       const div = document.createElement("div");
       div.className = "dish-item";
-      div.innerHTML = `<span>${d.name}</span><b>${d.price} ₽</b>`;
+      div.innerHTML = `<span>${dish.name}</span><b>${dish.price} ₽</b>`;
       div.onclick = () => {
-        dishInput.value = d.name;
+        dishInput.value = dish.name;
         dishDropdown.style.display = "none";
         calcCurrent();
       };
@@ -265,8 +272,8 @@ function showDropdown() {
   dishDropdown.style.display = "block";
 }
 
-document.addEventListener("click", e => {
-  if (!dishInput.parentElement.contains(e.target)) {
+document.addEventListener("click", event => {
+  if (!dishInput.parentElement.contains(event.target)) {
     dishDropdown.style.display = "none";
   }
 });
