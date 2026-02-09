@@ -22,6 +22,8 @@ body {
   background: #111827;
   color: white;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar h2 {
@@ -39,6 +41,20 @@ body {
 .sidebar a.active {
   background: #1f2933;
   color: white;
+}
+
+.sidebar-logout {
+  margin-top: auto;
+  background: #ef4444;
+  border: none;
+  color: white;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.sidebar-logout:hover {
+  background: #dc2626;
 }
 
 /* ================= CONTENT ================= */
@@ -73,7 +89,6 @@ body {
   box-shadow: 0 10px 25px rgba(0,0,0,.08);
 }
 
-/* было: grid-template-columns: 1fr 120px; */
 .table-head,
 .row {
   display: grid;
@@ -146,12 +161,19 @@ body {
   to { transform: scale(1); opacity: 1 }
 }
 
-.modal input {
+.modal input,
+.modal textarea,
+.modal select {
   width: 100%;
   padding: 10px;
   margin: 10px 0;
   border-radius: 8px;
   border: 1px solid #ddd;
+}
+
+.modal textarea {
+  min-height: 80px;
+  resize: vertical;
 }
 
 .modal-actions {
@@ -173,6 +195,20 @@ body {
   border: none;
   padding: 8px 16px;
   border-radius: 8px;
+}
+
+.modal-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 6px;
+  align-items: center;
 }
 
 /* ================================================= */
@@ -241,17 +277,6 @@ body {
     row-gap: 4px;
   }
 
-  .row span:nth-child(1),
-  .row span:nth-child(2) {
-    display: block;
-  }
-
-  .row span:nth-child(3) {
-    display: flex;
-    justify-content: flex-start;
-    margin-top: 6px;
-  }
-
   .table-body {
     max-height: 65vh;
   }
@@ -262,7 +287,9 @@ body {
     padding: 20px;
   }
 
-  .modal input {
+  .modal input,
+  .modal textarea,
+  .modal select {
     padding: 12px;
     font-size: 15px;
   }
@@ -285,21 +312,3 @@ body {
   }
 }
 
-.sidebar {
-  display: flex;
-  flex-direction: column;
-}
-
-.sidebar-logout {
-  margin-top: auto;
-  background: #ef4444;
-  border: none;
-  color: white;
-  padding: 10px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.sidebar-logout:hover {
-  background: #dc2626;
-}

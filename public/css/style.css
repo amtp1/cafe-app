@@ -19,7 +19,8 @@ button {
   font-size: 16px;
 }
 
-input, select {
+input,
+select {
   font-size: 16px;
   padding: 10px;
 }
@@ -41,7 +42,7 @@ body {
   background: #fff;
   padding: 20px;
   border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,.15);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, .15);
 }
 
 h2 {
@@ -53,7 +54,8 @@ h2 {
   gap: 20px;
 }
 
-.left, .right {
+.left,
+.right {
   flex: 1;
 }
 
@@ -64,7 +66,9 @@ label {
   display: block;
 }
 
-input, select, button {
+input,
+select,
+button {
   width: 100%;
   padding: 10px;
   border-radius: 10px;
@@ -78,7 +82,7 @@ input, select, button {
   gap: 10px;
 }
 
-.row > div {
+.row>div {
   flex: 1;
 }
 
@@ -135,7 +139,7 @@ input, select, button {
   background: #fff;
   padding: 20px;
   border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,.15);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, .15);
 }
 
 .history-toolbar {
@@ -224,7 +228,7 @@ input, select, button {
   padding: 12px;
   border-radius: 12px;
   margin-bottom: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .08);
   transition: .2s;
 }
 
@@ -336,7 +340,7 @@ input, select, button {
   border-radius: 12px;
   padding: 10px;
   min-width: 140px;
-  box-shadow: 0 10px 25px rgba(0,0,0,.2);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, .2);
   display: none;
 }
 
@@ -386,7 +390,7 @@ input, select, button {
   right: 0;
   background: white;
   border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0,0,0,.15);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, .15);
   max-height: 220px;
   overflow-y: auto;
   display: none;

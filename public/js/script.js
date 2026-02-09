@@ -166,6 +166,27 @@ async function loadHistory() {
   }
 
   renderHistory(orders);
+
+  // Загружаем краткий отчёт по дню
+  try {
+    const reportRes = await fetch("/api/reports/today");
+    if (reportRes.ok) {
+      const report = await reportRes.json();
+      const box = document.getElementById("reportSummary");
+      if (box) {
+        const methods = Object.entries(report.byPaymentMethod || {})
+          .map(([m, sum]) => `${m}: ${sum} ₽`)
+          .join(" · ");
+
+        box.innerHTML = `
+          <div><b>Выручка за сегодня:</b> ${report.totalRevenue} ₽ (заказов: ${report.count})</div>
+          <div><small>${methods || "Пока нет оплаченных заказов"}</small></div>
+        `;
+      }
+    }
+  } catch (error) {
+    console.error("Report load error", error);
+  }
 }
 
 function renderHistory(list) {
@@ -178,23 +199,34 @@ function renderHistory(list) {
       itemsHtml += `<div>${item.name} x${item.qty} — ${item.sum}</div>`;
     });
 
-    const icon = order.status === "Готово" ? "✅" : "⏳";
+    const icon =
+      order.status === "Оплачен"
+        ? "💰"
+        : order.status === "Готово"
+        ? "✅"
+        : "⏳";
 
     box.innerHTML += `
       <div class="order-card">
         <div class="order-head">
           <span>Стол ${order.table} · <b>Официант:</b> ${order.waiter}</span>
-          <span class="badge ${order.status === "Готово" ? "done" : "work"}"><b>${icon} ${
-            order.status
-          }</b></span>
+          <span class="badge ${
+            order.status === "Оплачен"
+              ? "done"
+              : order.status === "Готово"
+              ? "done"
+              : "work"
+          }"><b>${icon} ${order.status}</b></span>
           <span>${new Date(order.createdAt).toLocaleString()}</span>
         </div>
         <div class="order-items">${itemsHtml}</div>
         <div class="order-total">Итого: ${order.total}</div>
+        <div><b>Оплата:</b> ${order.paymentMethod || "—"}</div>
         <b>Статус:</b>
         <select onchange="changeStatus('${order._id}', this.value)">
           <option ${order.status === "В работе" ? "selected" : ""}>В работе</option>
           <option ${order.status === "Готово" ? "selected" : ""}>Готово</option>
+          <option ${order.status === "Оплачен" ? "selected" : ""}>Оплачен</option>
         </select>
       </div>
     `;
@@ -239,10 +271,19 @@ function showApp() {
 }
 
 async function changeStatus(id, status) {
+  let paymentMethod;
+
+  if (status === "Оплачен") {
+    paymentMethod = prompt(
+      "Способ оплаты (например: Наличные, Карта, Онлайн):",
+      "Наличные"
+    );
+  }
+
   await fetch(`/api/orders/${id}/status`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status })
+    body: JSON.stringify({ status, paymentMethod })
   });
 
   loadHistory();

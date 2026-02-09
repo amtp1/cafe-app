@@ -16,6 +16,14 @@ module.exports = mongoose.model("Order", {
     }
   ],
   total: { type: Number, required: true },
+  paymentMethod: {
+    type: String,
+    default: null // "Наличные" | "Карта" | "Онлайн" и т.п.
+  },
+  paidAt: {
+    type: Date,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now

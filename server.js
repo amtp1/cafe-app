@@ -36,12 +36,17 @@ app.use(
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "public/admin")));
 
-mongoose.connect(SERVER_MONGODB_URL);
+mongoose.connect(MONGODB_URL);
 
 const User = require("./models/User");
 const Menu = require("./models/Menu");
 const Waiter = require("./models/Waiter");
 const Order = require("./models/Order");
+const Ingredient = require("./models/Ingredient");
+const Stock = require("./models/Stock");
+const Recipe = require("./models/Recipe");
+const Purchase = require("./models/Purchase");
+const WriteOff = require("./models/WriteOff");
 
 app.get("/", (req, res) => {
   console.log(req.session.user);
@@ -130,10 +135,61 @@ app.get("/api/orders", async (req, res) => {
 });
 
 app.put("/api/orders/:id/status", async (req, res) => {
-  await Order.findByIdAndUpdate(req.params.id, {
-    status: req.body.status
+  const { status, paymentMethod } = req.body;
+
+  const order = await Order.findById(req.params.id);
+  if (!order) {
+    return res.sendStatus(404);
+  }
+
+  const prevStatus = order.status;
+
+  order.status = status;
+
+  if (paymentMethod) {
+    order.paymentMethod = paymentMethod;
+  }
+
+  if (status === "Оплачен" && !order.paidAt) {
+    order.paidAt = new Date();
+  }
+
+  await order.save();
+
+  // При переходе в "Готово" один раз списываем ингредиенты со склада
+  if (prevStatus !== "Готово" && status === "Готово") {
+    await applyInventoryForOrder(order);
+  }
+
+  res.json({ ok: true, order });
+});
+
+// Простой отчёт по выручке за сегодня (как в POS/iiko)
+app.get("/api/reports/today", auth, async (req, res) => {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date();
+  end.setHours(23, 59, 59, 999);
+
+  const orders = await Order.find({
+    createdAt: { $gte: start, $lte: end }
   });
-  res.json({ ok: true });
+
+  const totalRevenue = orders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+  const count = orders.length;
+
+  const byPaymentMethod = orders.reduce((acc, o) => {
+    const key = o.paymentMethod || "Без оплаты";
+    acc[key] = (acc[key] || 0) + Number(o.total || 0);
+    return acc;
+  }, {});
+
+  res.json({
+    totalRevenue,
+    count,
+    byPaymentMethod
+  });
 });
 
 app.get("/api/users", async (req, res) => {
@@ -167,6 +223,89 @@ app.delete("/api/menu/:id", async (req, res) => {
   res.json({ ok: true });
 });
 
+// ---------- ИНГРЕДИЕНТЫ / СКЛАД / ЗАКУПКИ / СПИСАНИЯ ----------
+
+app.get("/api/ingredients", auth, adminOnly, async (req, res) => {
+  const ingredients = await Ingredient.find().sort({ name: 1 });
+  res.json(ingredients);
+});
+
+app.post("/api/ingredients", auth, adminOnly, async (req, res) => {
+  const ingredient = new Ingredient(req.body);
+  await ingredient.save();
+
+  // создаём строку на складе с нулевым остатком, чтобы сразу видеть ингредиент
+  await Stock.findOneAndUpdate(
+    { ingredient: ingredient._id },
+    { $setOnInsert: { quantity: 0 } },
+    { upsert: true }
+  );
+
+  res.json(ingredient);
+});
+
+app.get("/api/stock", auth, adminOnly, async (req, res) => {
+  const stock = await Stock.find().populate("ingredient").sort({ "ingredient.name": 1 });
+  res.json(stock);
+});
+
+app.get("/api/recipes", auth, adminOnly, async (req, res) => {
+  const recipes = await Recipe.find().populate("menu").populate("components.ingredient");
+  res.json(recipes);
+});
+
+app.post("/api/recipes", auth, adminOnly, async (req, res) => {
+  const recipe = new Recipe(req.body);
+  await recipe.save();
+  res.json(recipe);
+});
+
+app.get("/api/purchases", auth, adminOnly, async (req, res) => {
+  const purchases = await Purchase.find().populate("items.ingredient").sort({ date: -1 });
+  res.json(purchases);
+});
+
+app.post("/api/purchases", auth, adminOnly, async (req, res) => {
+  const purchase = new Purchase(req.body);
+  await purchase.save();
+
+  // обновляем склад
+  await Promise.all(
+    purchase.items.map(async item => {
+      await Stock.findOneAndUpdate(
+        { ingredient: item.ingredient },
+        { $inc: { quantity: item.qty } },
+        { upsert: true }
+      );
+    })
+  );
+
+  res.json(purchase);
+});
+
+app.get("/api/writeoffs", auth, adminOnly, async (req, res) => {
+  const writeoffs = await WriteOff.find().populate("items.ingredient").sort({ date: -1 });
+  res.json(writeoffs);
+});
+
+app.post("/api/writeoffs", auth, adminOnly, async (req, res) => {
+  const writeOff = new WriteOff(req.body);
+  await writeOff.save();
+
+  // уменьшаем остатки
+  await Promise.all(
+    writeOff.items.map(async item => {
+      await Stock.findOneAndUpdate(
+        { ingredient: item.ingredient },
+        { $inc: { quantity: -item.qty } },
+        { upsert: true }
+      );
+    })
+  );
+
+  res.json(writeOff);
+});
+
 app.post("/api/save_user", auth, async (req, res) => {
   if (req.session.user.role !== "super_admin") {
     return res.sendStatus(403);
@@ -186,6 +325,26 @@ app.get("/admin_menu", (req, res) => {
 
 app.get("/admin_users", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin/users.html"));
+});
+
+app.get("/admin_stock", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin/stock.html"));
+});
+
+app.get("/admin_recipes", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin/recipes.html"));
+});
+
+app.get("/admin_purchases", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin/purchases.html"));
+});
+
+app.get("/admin_writeoffs", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin/writeoffs.html"));
+});
+
+app.get("/admin_dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin/dashboard.html"));
 });
 
 function auth(req, res, next) {
@@ -213,3 +372,47 @@ const PORT = 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Server running on port", PORT);
 });
+
+// ---------- ВСПОМОГАТЕЛЬНАЯ ЛОГИКА СКЛАДА ----------
+
+async function applyInventoryForOrder(order) {
+  // Находим позиции меню по имени
+  const names = order.items.map(i => i.name);
+  const menuItems = await Menu.find({ name: { $in: names } });
+  const menuByName = menuItems.reduce((acc, m) => {
+    acc[m.name] = m;
+    return acc;
+  }, {});
+
+  const menuIds = menuItems.map(m => m._id);
+  const recipes = await Recipe.find({ menu: { $in: menuIds } });
+  const recipesByMenuId = recipes.reduce((acc, r) => {
+    acc[r.menu.toString()] = r;
+    return acc;
+  }, {});
+
+  const changes = {};
+
+  order.items.forEach(item => {
+    const menuDoc = menuByName[item.name];
+    if (!menuDoc) return;
+    const recipe = recipesByMenuId[menuDoc._id.toString()];
+    if (!recipe) return;
+
+    recipe.components.forEach(component => {
+      const key = component.ingredient.toString();
+      const totalQty = (changes[key] || 0) + component.qty * item.qty;
+      changes[key] = totalQty;
+    });
+  });
+
+  await Promise.all(
+    Object.entries(changes).map(([ingredientId, qty]) =>
+      Stock.findOneAndUpdate(
+        { ingredient: ingredientId },
+        { $inc: { quantity: -qty } },
+        { upsert: true }
+      )
+    )
+  );
+}

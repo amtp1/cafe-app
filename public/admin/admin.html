@@ -12,29 +12,19 @@
   <aside class="sidebar">
     <h2>☕ Cafe Admin</h2>
     <nav>
-      <a class="nav-link active" href="/admin_users" data-page="users">Пользователи</a>
-    </nav>
-    <br>
-    <nav>
+      <a class="nav-link active" href="/admin_dashboard" data-page="dashboard">Дашборд</a>
+      <a class="nav-link" href="/admin_users" data-page="users">Пользователи</a>
       <a class="nav-link" href="/admin_menu" data-page="menu">Меню</a>
+      <a class="nav-link" href="/admin_stock" data-page="stock">Склад</a>
+      <a class="nav-link" href="/admin_recipes" data-page="recipes">Рецептура</a>
+      <a class="nav-link" href="/admin_purchases" data-page="purchases">Закупки</a>
+      <a class="nav-link" href="/admin_writeoffs" data-page="writeoffs">Списания</a>
     </nav>
     <button class="sidebar-logout" onclick="logout()">Выйти</button>
   </aside>
 
   <main id="content" class="content">
-    <div class="topbar">
-      <h1>Пользователи</h1>
-      <button class="add-btn" onclick="openUserModal()">+ Добавить пользователя</button>
-    </div>
-
-    <div class="table">
-      <div class="table-head">
-        <span>Имя</span>
-        <span>Логин</span>
-        <span>Действия</span>
-      </div>
-      <div id="userList" class="table-body"></div>
-  </div>
+    <!-- сюда подгружаются dashboard/users/menu/склад/закупки/списания -->
   </main>
 
 </div>
@@ -61,6 +51,57 @@
     <div class="modal-actions">
       <button class="cancel" onclick="closeUserModal()">Отмена</button>
       <button class="save" onclick="saveUser()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalIngredient">
+  <div class="modal">
+    <h2>Новый ингредиент</h2>
+    <input id="ingredientName" placeholder="Название ингредиента">
+    <input id="ingredientUnit" placeholder="Единица измерения (шт, кг, л...)" value="шт">
+    <div class="modal-actions">
+      <button class="cancel" onclick="closeIngredientModal()">Отмена</button>
+      <button class="save" onclick="saveIngredient()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalRecipe">
+  <div class="modal">
+    <h2>Новая рецептура</h2>
+    <select id="recipeMenuSelect"></select>
+    <div class="modal-list" id="recipeComponentsList"></div>
+    <button class="add-btn" type="button" onclick="addRecipeRow()">+ Позиция</button>
+    <div class="modal-actions">
+      <button class="cancel" onclick="closeRecipeModal()">Отмена</button>
+      <button class="save" onclick="saveRecipe()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalPurchase">
+  <div class="modal">
+    <h2>Накладная</h2>
+    <input id="purchaseSupplier" placeholder="Поставщик">
+    <div class="modal-list" id="purchaseItemsList"></div>
+    <button class="add-btn" type="button" onclick="addPurchaseRow()">+ Позиция</button>
+    <div class="modal-actions">
+      <button class="cancel" onclick="closePurchaseModal()">Отмена</button>
+      <button class="save" onclick="savePurchase()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalWriteoff">
+  <div class="modal">
+    <h2>Списание</h2>
+    <input id="writeoffReason" placeholder="Причина списания">
+    <div class="modal-list" id="writeoffItemsList"></div>
+    <button class="add-btn" type="button" onclick="addWriteoffRow()">+ Позиция</button>
+    <div class="modal-actions">
+      <button class="cancel" onclick="closeWriteoffModal()">Отмена</button>
+      <button class="save" onclick="saveWriteoff()">Сохранить</button>
     </div>
   </div>
 </div>
