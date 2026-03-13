@@ -6,6 +6,7 @@ module.exports = mongoose.model("Purchase", {
     default: Date.now
   },
   supplier: { type: String, trim: true },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   items: [
     {
       ingredient: {

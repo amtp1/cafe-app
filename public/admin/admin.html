@@ -11,14 +11,42 @@
 
   <aside class="sidebar">
     <h2>☕ Cafe Admin</h2>
+    <div class="sidebar-user" id="sidebarUser"></div>
     <nav>
-      <a class="nav-link active" href="/admin_dashboard" data-page="dashboard">Дашборд</a>
-      <a class="nav-link" href="/admin_users" data-page="users">Пользователи</a>
-      <a class="nav-link" href="/admin_menu" data-page="menu">Меню</a>
-      <a class="nav-link" href="/admin_stock" data-page="stock">Склад</a>
-      <a class="nav-link" href="/admin_recipes" data-page="recipes">Рецептура</a>
-      <a class="nav-link" href="/admin_purchases" data-page="purchases">Закупки</a>
-      <a class="nav-link" href="/admin_writeoffs" data-page="writeoffs">Списания</a>
+      <div class="nav-group">
+        <span class="nav-group-title">Главная</span>
+        <a class="nav-link active" href="/admin_dashboard" data-page="dashboard">Дашборд</a>
+      </div>
+      <div class="nav-group">
+        <span class="nav-group-title">Персонал</span>
+        <a class="nav-link" href="/admin_users" data-page="users">Пользователи</a>
+      </div>
+      <div class="nav-group">
+        <span class="nav-group-title">Меню</span>
+        <a class="nav-link" href="/admin_menu" data-page="menu">Меню</a>
+        <a class="nav-link" href="/admin_categories" data-page="categories">Категории</a>
+      </div>
+      <div class="nav-group">
+        <span class="nav-group-title">Склад и производство</span>
+        <a class="nav-link" href="/admin_stock" data-page="stock">Склад</a>
+        <a class="nav-link" href="/admin_recipes" data-page="recipes">Рецептура</a>
+        <a class="nav-link" href="/admin_purchases" data-page="purchases">Закупки</a>
+        <a class="nav-link" href="/admin_writeoffs" data-page="writeoffs">Списания</a>
+      </div>
+      <div class="nav-group">
+        <span class="nav-group-title">Зал и столы</span>
+        <a class="nav-link" href="/admin_halls" data-page="halls">Залы</a>
+        <a class="nav-link" href="/admin_tables" data-page="tables">Столы</a>
+      </div>
+      <div class="nav-group">
+        <span class="nav-group-title">Справочники</span>
+        <a class="nav-link" href="/admin_suppliers" data-page="suppliers">Поставщики</a>
+        <a class="nav-link" href="/admin_shifts" data-page="shifts">Смены</a>
+      </div>
+      <div class="nav-group">
+        <span class="nav-group-title">Система</span>
+        <a class="nav-link" href="/admin_settings" data-page="settings">Настройки</a>
+      </div>
     </nav>
     <button class="sidebar-logout" onclick="logout()">Выйти</button>
   </aside>
@@ -55,11 +83,28 @@
   </div>
 </div>
 
+<div class="modal-bg" id="modalEditUser">
+  <div class="modal">
+    <h2>Редактировать пользователя</h2>
+    <input type="hidden" id="editUserId">
+    <input id="editUserNickname" placeholder="Имя">
+    <div class="modal-actions">
+      <button class="cancel" onclick="closeEditUserModal()">Отмена</button>
+      <button class="save" onclick="saveEditUser()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="modalIngredient">
   <div class="modal">
     <h2>Новый ингредиент</h2>
     <input id="ingredientName" placeholder="Название ингредиента">
-    <input id="ingredientUnit" placeholder="Единица измерения (шт, кг, л...)" value="шт">
+    <label class="modal-label">Единица измерения</label>
+    <select id="ingredientUnit">
+      <option value="шт">шт</option>
+      <option value="кг">кг</option>
+      <option value="л">л</option>
+    </select>
     <div class="modal-actions">
       <button class="cancel" onclick="closeIngredientModal()">Отмена</button>
       <button class="save" onclick="saveIngredient()">Сохранить</button>
@@ -102,6 +147,65 @@
     <div class="modal-actions">
       <button class="cancel" onclick="closeWriteoffModal()">Отмена</button>
       <button class="save" onclick="saveWriteoff()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalCategory">
+  <div class="modal">
+    <h2>Категория меню</h2>
+    <input id="categoryName" placeholder="Название">
+    <input id="categorySortOrder" type="number" placeholder="Порядок" value="0">
+    <div class="modal-actions">
+      <button class="cancel" onclick="closeCategoryModal()">Отмена</button>
+      <button class="save" onclick="saveCategory()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalHall">
+  <div class="modal">
+    <h2>Зал</h2>
+    <input id="hallName" placeholder="Название зала">
+    <div class="modal-actions">
+      <button class="cancel" onclick="closeHallModal()">Отмена</button>
+      <button class="save" onclick="saveHall()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalTable">
+  <div class="modal">
+    <h2>Стол</h2>
+    <input id="tableNumber" type="number" placeholder="Номер стола" min="1">
+    <select id="tableHallSelect"></select>
+    <input id="tableSeats" type="number" placeholder="Мест" value="4" min="1">
+    <div class="modal-actions">
+      <button class="cancel" onclick="closeTableModal()">Отмена</button>
+      <button class="save" onclick="saveTable()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalSupplier">
+  <div class="modal">
+    <h2>Поставщик</h2>
+    <input id="supplierName" placeholder="Название">
+    <input id="supplierContact" placeholder="Контакт (телефон, email)">
+    <div class="modal-actions">
+      <button class="cancel" onclick="closeSupplierModal()">Отмена</button>
+      <button class="save" onclick="saveSupplier()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalShift">
+  <div class="modal">
+    <h2>Открыть смену</h2>
+    <input id="shiftDate" type="date">
+    <div class="modal-actions">
+      <button class="cancel" onclick="closeShiftModal()">Отмена</button>
+      <button class="save" onclick="saveShift()">Открыть</button>
     </div>
   </div>
 </div>

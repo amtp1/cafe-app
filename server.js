@@ -36,7 +36,7 @@ app.use(
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "public/admin")));
 
-mongoose.connect(SERVER_MONGODB_URL);
+mongoose.connect(LOCAL_MONGODB_URL);
 
 const User = require("./models/User");
 const Menu = require("./models/Menu");
@@ -47,6 +47,12 @@ const Stock = require("./models/Stock");
 const Recipe = require("./models/Recipe");
 const Purchase = require("./models/Purchase");
 const WriteOff = require("./models/WriteOff");
+const Category = require("./models/Category");
+const Hall = require("./models/Hall");
+const Table = require("./models/Table");
+const Supplier = require("./models/Supplier");
+const Shift = require("./models/Shift");
+const Config = require("./models/Config");
 
 app.get("/", (req, res) => {
   console.log(req.session.user);
@@ -94,6 +100,15 @@ app.get("/api/me", (req, res) => {
   res.json(req.session.user || null);
 });
 
+app.get("/api/profile", async (req, res) => {
+  if (!req.session?.user) return res.status(401).json(null);
+  const user = await User.findById(req.session.user.id)
+    .select("nickname username createdAt")
+    .lean();
+  if (!user) return res.status(401).json(null);
+  res.json(user);
+});
+
 app.get("/menu", async (req, res) => {
   const menu = await Menu.find();
   res.json(menu);
@@ -119,6 +134,7 @@ app.post("/api/order", async (req, res) => {
     waiter: req.session.user.nickname,
     userId: req.session.user.id,
     table: req.body.table,
+    hall: req.body.hall || null,
     items: req.body.items,
     total: req.body.total
   });
@@ -135,11 +151,23 @@ app.get("/api/orders", async (req, res) => {
 });
 
 app.put("/api/orders/:id/status", async (req, res) => {
-  const { status, paymentMethod } = req.body;
+  const { status, paymentMethod, codeWord } = req.body;
 
   const order = await Order.findById(req.params.id);
   if (!order) {
     return res.sendStatus(404);
+  }
+
+  if (status === "Отменен") {
+    const doc = await Config.findOne({ key: "cancelOrderCodeWord" }).lean();
+    const savedWord = (doc && doc.value) ? String(doc.value).trim() : "";
+    const givenWord = (codeWord != null) ? String(codeWord).trim() : "";
+    if (!savedWord) {
+      return res.status(400).json({ error: "Кодовое слово не задано. Задайте его в админке." });
+    }
+    if (givenWord !== savedWord) {
+      return res.status(403).json({ error: "Неверное кодовое слово" });
+    }
   }
 
   const prevStatus = order.status;
@@ -176,10 +204,11 @@ app.get("/api/reports/today", auth, async (req, res) => {
     createdAt: { $gte: start, $lte: end }
   });
 
-  const totalRevenue = orders.reduce((sum, o) => sum + Number(o.total || 0), 0);
-  const count = orders.length;
+  const paidOrders = orders.filter(o => o.status === "Оплачен");
+  const totalRevenue = paidOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+  const count = paidOrders.length;
 
-  const byPaymentMethod = orders.reduce((acc, o) => {
+  const byPaymentMethod = paidOrders.reduce((acc, o) => {
     const key = o.paymentMethod || "Без оплаты";
     acc[key] = (acc[key] || 0) + Number(o.total || 0);
     return acc;
@@ -201,6 +230,17 @@ app.post("/api/users/:id/block", async (req, res) => {
   const { isBlocked } = req.body;
   await User.findByIdAndUpdate(req.params.id, { isBlocked });
   res.json({ ok: true });
+});
+
+app.put("/api/users/:id", auth, adminOnly, async (req, res) => {
+  const { nickname } = req.body;
+  const user = await User.findByIdAndUpdate(
+    req.params.id,
+    { nickname: nickname != null ? String(nickname).trim() : undefined },
+    { new: true }
+  );
+  if (!user) return res.sendStatus(404);
+  res.json(user);
 });
 
 app.get("/api/menu", auth, async (req, res) => {
@@ -261,12 +301,18 @@ app.post("/api/recipes", auth, adminOnly, async (req, res) => {
 });
 
 app.get("/api/purchases", auth, adminOnly, async (req, res) => {
-  const purchases = await Purchase.find().populate("items.ingredient").sort({ date: -1 });
+  const purchases = await Purchase.find()
+    .populate("items.ingredient")
+    .populate("createdBy", "nickname")
+    .sort({ date: -1 });
   res.json(purchases);
 });
 
 app.post("/api/purchases", auth, adminOnly, async (req, res) => {
-  const purchase = new Purchase(req.body);
+  const purchase = new Purchase({
+    ...req.body,
+    createdBy: req.session.user.id
+  });
   await purchase.save();
 
   // обновляем склад
@@ -284,12 +330,18 @@ app.post("/api/purchases", auth, adminOnly, async (req, res) => {
 });
 
 app.get("/api/writeoffs", auth, adminOnly, async (req, res) => {
-  const writeoffs = await WriteOff.find().populate("items.ingredient").sort({ date: -1 });
+  const writeoffs = await WriteOff.find()
+    .populate("items.ingredient")
+    .populate("createdBy", "nickname")
+    .sort({ date: -1 });
   res.json(writeoffs);
 });
 
 app.post("/api/writeoffs", auth, adminOnly, async (req, res) => {
-  const writeOff = new WriteOff(req.body);
+  const writeOff = new WriteOff({
+    ...req.body,
+    createdBy: req.session.user.id
+  });
   await writeOff.save();
 
   // уменьшаем остатки
@@ -345,6 +397,124 @@ app.get("/admin_writeoffs", (req, res) => {
 
 app.get("/admin_dashboard", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin/dashboard.html"));
+});
+
+// ---------- ЗАГОТОВКИ КАК В IIKO ----------
+
+app.get("/api/categories", auth, adminOnly, async (req, res) => {
+  const list = await Category.find().sort({ sortOrder: 1, name: 1 });
+  res.json(list);
+});
+app.post("/api/categories", auth, adminOnly, async (req, res) => {
+  const doc = new Category(req.body);
+  await doc.save();
+  res.json(doc);
+});
+app.delete("/api/categories/:id", auth, adminOnly, async (req, res) => {
+  await Category.findByIdAndDelete(req.params.id);
+  res.json({ ok: true });
+});
+
+app.get("/api/halls", auth, async (req, res) => {
+  const list = await Hall.find().sort({ name: 1 });
+  res.json(list);
+});
+app.post("/api/halls", auth, adminOnly, async (req, res) => {
+  const doc = new Hall(req.body);
+  await doc.save();
+  res.json(doc);
+});
+app.delete("/api/halls/:id", auth, adminOnly, async (req, res) => {
+  await Hall.findByIdAndDelete(req.params.id);
+  res.json({ ok: true });
+});
+
+app.get("/api/tables", auth, async (req, res) => {
+  const list = await Table.find().populate("hall").sort({ number: 1 });
+  res.json(list);
+});
+app.post("/api/tables", auth, adminOnly, async (req, res) => {
+  const doc = new Table(req.body);
+  await doc.save();
+  res.json(doc);
+});
+app.delete("/api/tables/:id", auth, adminOnly, async (req, res) => {
+  await Table.findByIdAndDelete(req.params.id);
+  res.json({ ok: true });
+});
+
+app.get("/api/suppliers", auth, adminOnly, async (req, res) => {
+  const list = await Supplier.find().sort({ name: 1 });
+  res.json(list);
+});
+app.post("/api/suppliers", auth, adminOnly, async (req, res) => {
+  const doc = new Supplier(req.body);
+  await doc.save();
+  res.json(doc);
+});
+app.delete("/api/suppliers/:id", auth, adminOnly, async (req, res) => {
+  await Supplier.findByIdAndDelete(req.params.id);
+  res.json({ ok: true });
+});
+
+app.get("/api/shifts", auth, adminOnly, async (req, res) => {
+  const list = await Shift.find()
+    .populate("openedBy", "nickname")
+    .populate("closedBy", "nickname")
+    .sort({ date: -1 })
+    .limit(50);
+  res.json(list);
+});
+app.post("/api/shifts", auth, adminOnly, async (req, res) => {
+  const doc = new Shift({
+    date: req.body.date ? new Date(req.body.date) : new Date(),
+    openedBy: req.session.user.id
+  });
+  await doc.save();
+  res.json(doc);
+});
+app.put("/api/shifts/:id/close", auth, adminOnly, async (req, res) => {
+  const shift = await Shift.findByIdAndUpdate(
+    req.params.id,
+    { closedAt: new Date(), closedBy: req.session.user.id },
+    { new: true }
+  );
+  if (!shift) return res.sendStatus(404);
+  res.json(shift);
+});
+
+app.get("/admin_categories", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin/categories.html"));
+});
+app.get("/admin_halls", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin/halls.html"));
+});
+app.get("/admin_tables", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin/tables.html"));
+});
+app.get("/admin_suppliers", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin/suppliers.html"));
+});
+app.get("/admin_shifts", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin/shifts.html"));
+});
+app.get("/admin_settings", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin/settings.html"));
+});
+
+// Кодовое слово для отмены заказа (только админ)
+app.get("/api/config/cancel-code", auth, adminOnly, async (req, res) => {
+  const doc = await Config.findOne({ key: "cancelOrderCodeWord" }).lean();
+  res.json({ value: (doc && doc.value) ? doc.value : "" });
+});
+app.put("/api/config/cancel-code", auth, adminOnly, async (req, res) => {
+  const value = req.body.value != null ? String(req.body.value).trim() : "";
+  await Config.findOneAndUpdate(
+    { key: "cancelOrderCodeWord" },
+    { key: "cancelOrderCodeWord", value },
+    { upsert: true, new: true }
+  );
+  res.json({ ok: true });
 });
 
 function auth(req, res, next) {

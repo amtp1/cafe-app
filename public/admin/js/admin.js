@@ -1,5 +1,6 @@
 const modalDish = document.getElementById("modalDish");
 const modalUser = document.getElementById("modalUser");
+const modalEditUser = document.getElementById("modalEditUser");
 const modalIngredient = document.getElementById("modalIngredient");
 const modalRecipe = document.getElementById("modalRecipe");
 const modalPurchase = document.getElementById("modalPurchase");
@@ -10,6 +11,8 @@ const dishPrice = document.getElementById("dishPrice");
 const userNickname = document.getElementById("userNickname");
 const userName = document.getElementById("userName");
 const userPassword = document.getElementById("userPassword");
+const editUserId = document.getElementById("editUserId");
+const editUserNickname = document.getElementById("editUserNickname");
 
 const ingredientName = document.getElementById("ingredientName");
 const ingredientUnit = document.getElementById("ingredientUnit");
@@ -20,6 +23,12 @@ const purchaseItemsList = document.getElementById("purchaseItemsList");
 const writeoffReason = document.getElementById("writeoffReason");
 const writeoffItemsList = document.getElementById("writeoffItemsList");
 
+const modalCategory = document.getElementById("modalCategory");
+const modalHall = document.getElementById("modalHall");
+const modalTable = document.getElementById("modalTable");
+const modalSupplier = document.getElementById("modalSupplier");
+const modalShift = document.getElementById("modalShift");
+
 let cachedIngredients = [];
 
 async function ensureIngredientsLoaded() {
@@ -29,6 +38,7 @@ async function ensureIngredientsLoaded() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  loadSidebarUser();
   initNav();
 
   // Авто-загрузка активной страницы при старте
@@ -37,6 +47,18 @@ document.addEventListener("DOMContentLoaded", () => {
     activeLink.click();
   }
 });
+
+async function loadSidebarUser() {
+  const el = document.getElementById("sidebarUser");
+  if (!el) return;
+  try {
+    const res = await fetch("/api/me");
+    const user = await res.json();
+    el.textContent = user ? `Вы: ${user.nickname || user.username}` : "";
+  } catch (e) {
+    el.textContent = "";
+  }
+}
 
 function initNav() {
   document.querySelectorAll(".nav-link").forEach(link => {
@@ -91,6 +113,49 @@ function initPageScripts(page) {
   if (page === "writeoffs") {
     loadWriteoffs();
   }
+
+  if (page === "categories") {
+    loadCategories();
+  }
+  if (page === "halls") {
+    loadHalls();
+  }
+  if (page === "tables") {
+    loadTables();
+  }
+  if (page === "suppliers") {
+    loadSuppliers();
+  }
+  if (page === "shifts") {
+    loadShifts();
+  }
+  if (page === "settings") {
+    loadSettings();
+  }
+}
+
+async function loadSettings() {
+  const input = document.getElementById("cancelCodeInput");
+  if (!input) return;
+  try {
+    const res = await fetch("/api/config/cancel-code");
+    const data = await res.json();
+    input.value = (data && data.value) ? data.value : "";
+  } catch (e) {
+    input.value = "";
+  }
+}
+
+async function saveCancelCode() {
+  const input = document.getElementById("cancelCodeInput");
+  if (!input) return;
+  const value = input.value.trim();
+  await fetch("/api/config/cancel-code", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ value })
+  });
+  alert("Сохранено");
 }
 
 function openDishModal() {
@@ -107,6 +172,70 @@ function closeDishModal() {
 
 function closeUserModal() {
   modalUser.style.display = "none";
+}
+
+function openEditUserModal(id, nickname) {
+  editUserId.value = id;
+  editUserNickname.value = nickname || "";
+  modalEditUser.style.display = "flex";
+}
+
+function closeEditUserModal() {
+  modalEditUser.style.display = "none";
+}
+
+function openCategoryModal() {
+  document.getElementById("categoryName").value = "";
+  document.getElementById("categorySortOrder").value = "0";
+  modalCategory.style.display = "flex";
+}
+function closeCategoryModal() {
+  modalCategory.style.display = "none";
+}
+
+function openHallModal() {
+  document.getElementById("hallName").value = "";
+  modalHall.style.display = "flex";
+}
+function closeHallModal() {
+  modalHall.style.display = "none";
+}
+
+async function openTableModal() {
+  const res = await fetch("/api/halls");
+  const halls = await res.json();
+  const sel = document.getElementById("tableHallSelect");
+  sel.innerHTML = '<option value="">— Без зала —</option>';
+  halls.forEach(h => {
+    const opt = document.createElement("option");
+    opt.value = h._id;
+    opt.textContent = h.name;
+    sel.appendChild(opt);
+  });
+  document.getElementById("tableNumber").value = "";
+  document.getElementById("tableSeats").value = "4";
+  modalTable.style.display = "flex";
+}
+function closeTableModal() {
+  modalTable.style.display = "none";
+}
+
+function openSupplierModal() {
+  document.getElementById("supplierName").value = "";
+  document.getElementById("supplierContact").value = "";
+  modalSupplier.style.display = "flex";
+}
+function closeSupplierModal() {
+  modalSupplier.style.display = "none";
+}
+
+function openShiftModal() {
+  const d = new Date();
+  document.getElementById("shiftDate").value = d.toISOString().slice(0, 10);
+  modalShift.style.display = "flex";
+}
+function closeShiftModal() {
+  modalShift.style.display = "none";
 }
 
 function openIngredientModal() {
@@ -253,7 +382,7 @@ async function saveUser() {
 
 async function saveIngredient() {
   const name = ingredientName.value.trim();
-  const unit = ingredientUnit.value.trim() || "шт";
+  const unit = ingredientUnit.value || "шт";
 
   if (!name) {
     alert("Введите название ингредиента");
@@ -288,14 +417,18 @@ async function loadUsers() {
     row.innerHTML = `
       <span>${user.nickname}</span>
       <span>${user.username}</span>
-      <span>
-        <button class="action-btn ${user.isBlocked ? "action-unlock" : "action-lock"}">
+      <span class="row-actions">
+        <button class="action-btn action-edit" data-action="edit">Изменить</button>
+        <button class="action-btn ${user.isBlocked ? "action-unlock" : "action-lock"}" data-action="block">
           ${user.isBlocked ? "Разблокировать" : "Заблокировать"}
         </button>
       </span>
     `;
 
-    row.querySelector("button").addEventListener("click", () => {
+    row.querySelector("[data-action=edit]").addEventListener("click", () => {
+      openEditUserModal(user._id, user.nickname);
+    });
+    row.querySelector("[data-action=block]").addEventListener("click", () => {
       toggleUser(user._id, user.isBlocked);
     });
 
@@ -311,6 +444,104 @@ async function toggleUser(id, isBlocked) {
   });
 
   loadUsers();
+}
+
+async function saveEditUser() {
+  const id = editUserId.value;
+  const nickname = editUserNickname.value.trim();
+
+  if (!id || !nickname) {
+    alert("Введите имя");
+    return;
+  }
+
+  await fetch(`/api/users/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nickname })
+  });
+
+  closeEditUserModal();
+  loadUsers();
+}
+
+async function saveCategory() {
+  const name = document.getElementById("categoryName").value.trim();
+  const sortOrder = Number(document.getElementById("categorySortOrder").value) || 0;
+  if (!name) {
+    alert("Введите название");
+    return;
+  }
+  await fetch("/api/categories", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, sortOrder })
+  });
+  closeCategoryModal();
+  loadCategories();
+}
+
+async function saveHall() {
+  const name = document.getElementById("hallName").value.trim();
+  if (!name) {
+    alert("Введите название зала");
+    return;
+  }
+  await fetch("/api/halls", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name })
+  });
+  closeHallModal();
+  loadHalls();
+}
+
+async function saveTable() {
+  const number = Number(document.getElementById("tableNumber").value);
+  const hall = document.getElementById("tableHallSelect").value || undefined;
+  const seats = Number(document.getElementById("tableSeats").value) || 4;
+  if (!number || number < 1) {
+    alert("Введите номер стола");
+    return;
+  }
+  await fetch("/api/tables", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ number, hall: hall || null, seats })
+  });
+  closeTableModal();
+  loadTables();
+}
+
+async function saveSupplier() {
+  const name = document.getElementById("supplierName").value.trim();
+  const contact = document.getElementById("supplierContact").value.trim();
+  if (!name) {
+    alert("Введите название поставщика");
+    return;
+  }
+  await fetch("/api/suppliers", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, contact })
+  });
+  closeSupplierModal();
+  loadSuppliers();
+}
+
+async function saveShift() {
+  const date = document.getElementById("shiftDate").value;
+  if (!date) {
+    alert("Укажите дату");
+    return;
+  }
+  await fetch("/api/shifts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ date })
+  });
+  closeShiftModal();
+  loadShifts();
 }
 
 async function saveDish() {
@@ -581,6 +812,7 @@ async function loadPurchases() {
         <div><b>${total} ₽</b></div>
         <div><small>${itemsText}</small></div>
       </span>
+      <span>${p.createdBy?.nickname || p.createdBy?.username || "—"}</span>
     `;
     list.appendChild(div);
   });
@@ -601,9 +833,148 @@ async function loadWriteoffs() {
     div.innerHTML = `
       <span>${new Date(w.date).toLocaleDateString()}</span>
       <span>${w.reason || "-"}</span>
+      <span>${w.createdBy?.nickname || w.createdBy?.username || "—"}</span>
     `;
     list.appendChild(div);
   });
+}
+
+async function loadCategories() {
+  const list = document.getElementById("categoryList");
+  if (!list) return;
+  const res = await fetch("/api/categories");
+  const data = await res.json();
+  list.innerHTML = "";
+  data.forEach(c => {
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `
+      <span>${c.name}</span>
+      <span>${c.sortOrder ?? 0}</span>
+      <span>
+        <button class="action-btn action-delete">Удалить</button>
+      </span>
+    `;
+    row.querySelector("button").onclick = () => deleteCategory(c._id);
+    list.appendChild(row);
+  });
+}
+
+async function loadHalls() {
+  const list = document.getElementById("hallList");
+  if (!list) return;
+  const res = await fetch("/api/halls");
+  const data = await res.json();
+  list.innerHTML = "";
+  data.forEach(h => {
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `
+      <span>${h.name}</span>
+      <span>
+        <button class="action-btn action-delete">Удалить</button>
+      </span>
+    `;
+    row.querySelector("button").onclick = () => deleteHall(h._id);
+    list.appendChild(row);
+  });
+}
+
+async function loadTables() {
+  const list = document.getElementById("tableList");
+  if (!list) return;
+  const res = await fetch("/api/tables");
+  const data = await res.json();
+  list.innerHTML = "";
+  data.forEach(t => {
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `
+      <span>${t.number}</span>
+      <span>${t.hall?.name || "—"}</span>
+      <span>${t.seats ?? "—"}</span>
+      <span>
+        <button class="action-btn action-delete">Удалить</button>
+      </span>
+    `;
+    row.querySelector("button").onclick = () => deleteTable(t._id);
+    list.appendChild(row);
+  });
+}
+
+async function loadSuppliers() {
+  const list = document.getElementById("supplierList");
+  if (!list) return;
+  const res = await fetch("/api/suppliers");
+  const data = await res.json();
+  list.innerHTML = "";
+  data.forEach(s => {
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `
+      <span>${s.name}</span>
+      <span>${s.contact || "-"}</span>
+      <span>
+        <button class="action-btn action-delete">Удалить</button>
+      </span>
+    `;
+    row.querySelector("button").onclick = () => deleteSupplier(s._id);
+    list.appendChild(row);
+  });
+}
+
+async function loadShifts() {
+  const list = document.getElementById("shiftList");
+  if (!list) return;
+  const res = await fetch("/api/shifts");
+  const data = await res.json();
+  list.innerHTML = "";
+  data.forEach(s => {
+    const row = document.createElement("div");
+    row.className = "row";
+    const openedBy = s.openedBy?.nickname || s.openedBy?.username || "—";
+    const closedBy = s.closedBy?.nickname || s.closedBy?.username || "—";
+    const closeBtn = !s.closedAt
+      ? '<button type="button" class="action-btn action-edit">Закрыть смену</button>'
+      : "";
+    row.innerHTML = `
+      <span>${new Date(s.date).toLocaleDateString()}</span>
+      <span>${s.openedAt ? new Date(s.openedAt).toLocaleTimeString() : "—"}</span>
+      <span>${s.closedAt ? new Date(s.closedAt).toLocaleTimeString() : "—"}</span>
+      <span>${openedBy}</span>
+      <span>${closedBy}</span>
+      <span>${closeBtn}</span>
+    `;
+    const btn = row.querySelector("button");
+    if (btn) btn.onclick = () => closeShift(s._id);
+    list.appendChild(row);
+  });
+}
+
+async function closeShift(id) {
+  await fetch(`/api/shifts/${id}/close`, { method: "PUT" });
+  loadShifts();
+}
+
+async function deleteCategory(id) {
+  if (!confirm("Удалить категорию?")) return;
+  await fetch(`/api/categories/${id}`, { method: "DELETE" });
+  loadCategories();
+}
+async function deleteHall(id) {
+  if (!confirm("Удалить зал?")) return;
+  await fetch(`/api/halls/${id}`, { method: "DELETE" });
+  loadHalls();
+}
+async function deleteTable(id) {
+  if (!confirm("Удалить стол?")) return;
+  await fetch(`/api/tables/${id}`, { method: "DELETE" });
+  loadTables();
+}
+async function deleteSupplier(id) {
+  if (!confirm("Удалить поставщика?")) return;
+  await fetch(`/api/suppliers/${id}`, { method: "DELETE" });
+  loadSuppliers();
 }
 
 async function deleteDish(id) {

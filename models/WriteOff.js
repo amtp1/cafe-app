@@ -6,6 +6,7 @@ module.exports = mongoose.model("WriteOff", {
     default: Date.now
   },
   reason: { type: String, trim: true },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   items: [
     {
       ingredient: {

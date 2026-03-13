@@ -5,7 +5,8 @@ const UserSchema = new mongoose.Schema({
   nickname: { type: String, trim: true },
   password: { type: String, required: true },
   role: { type: String, default: "waiter" },
-  isBlocked: { type: Boolean, default: false }
+  isBlocked: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model("User", UserSchema);

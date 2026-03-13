@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 module.exports = mongoose.model("Order", {
   waiter: { type: String, required: true, trim: true },
   table: { type: Number, required: true },
+  hall: { type: String, trim: true },
   status: {
     type: String,
     default: "В работе"
